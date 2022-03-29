@@ -5,7 +5,6 @@
 ("property-subtype")    "property sub-type"    -> Dummies
 ("living_area")         "Living area"
 ("post-code")           "Post code"            -> Dummies
-("land-area")           "Surface of the plot",
 ("kitchen-type")        "Kitchen type"          [options]
 ("swimming-pool")        "Swimming pool"          bool
 ("energy-class")        "Energy class"          [options]
@@ -14,6 +13,9 @@
 """
 
 import json
+
+import preprocessing.cleaning_data as cleaning_data
+import predict.prediction as prediction
 
 from flask import (
     Flask,
@@ -136,9 +138,28 @@ def salary_api() -> dict:
     swimming_pool, error_message = convert_to_bool(swimming_pool, "swimming pool")
     error_messages += error_message
 
+    if len(error_messages) > 0:
+        return {"error": error_messages}
+
+    house_information = {
+        "property sub-type": property_subtype,
+        "Living area": living_area,
+        "Kitchen type": kitchen_type,
+        "Swimming pool": swimming_pool,
+        "Energy class": energy_class,
+        "Street": street,
+        "House": house,
+        "Post code": post_code,
+    }
+
     if not error_messages:
-        return {"prediction": 100}  # Obiviously this should be replased
-    return {"error": error_messages}
+        error_msgs = ""
+        cleaned_data, errors = cleaning_data.preprocess(house_information)
+        error_msgs += errors
+        prediction_result, errors = prediction.predict(cleaned_data)
+        error_msgs += errors
+        return prediction_result
+    return {"error": error_msgs}
 
 
 if __name__ == "__main__":
