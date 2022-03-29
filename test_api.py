@@ -1,10 +1,10 @@
-"""This module is for testing flack_challenge.py API"""
+"""This module is for testing app.py API"""
 
-from io import BytesIO
-import json
+# from io import BytesIO
+# import json
 import requests
-import pycurl
 
+# import pycurl
 
 
 def test_api():
@@ -25,22 +25,20 @@ def test_api():
     )
     print(my_result.text)
 
-
-"""    my_result = requests.post(
+    my_result = requests.post(
         "http://127.0.0.1:5000/house",
         params={
-            "property-subtype": 2500,
-            "living-area": 2000,
-            "land-area": 1800,
-            "kitchen-type": "",
-            "swimming-pool": "",
-            "energy-class": "",
-            "street-address": "",
-            "house-number": "",
-            "post-code": "",
+            "property-subtype": "CASTLE V",
+            "living-area": "900N",
+            "kitchen-type": "Hyper equipped",
+            "swimming-pool": "true",
+            "energy-class": "C_B",
+            "street-address": "Rue Royale",
+            "house-number": "190",
+            "post-code": "1000",
         },
     )
-    print(my_result.text)"""
+    print(my_result.text)
 
 
 if __name__ == "__main__":
