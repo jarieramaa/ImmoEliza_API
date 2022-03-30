@@ -20,14 +20,6 @@ import numpy as np
 import pandas as pd
 
 
-def _save_house(house_information: dict):
-    """
-    Just for testing. Saving a dictionary that was created by API
-    :param house_information: Dictionary with house information.
-    """
-    with open("./house_information.pickle", "wb") as house_information_file:
-        pickle.dump(house_information, house_information_file)
-
 
 def _load_house() -> dict:
     """
@@ -198,17 +190,7 @@ def preprocess(house_information: dict, model_row :pd.DataFrame) -> np.ndarray:
     model_row = _set_property_subtype(house_information, model_row)
     model_row = _set_post_code(house_information, model_row)
     print("MODEL ROW:", model_row)
-    
-
-
-    with open("./x_test_api.pkl", "wb") as final_file:
-        pickle.dump(model_row, final_file)
 
     return model_row
 
 
-if __name__ == "__main__":
-    house_information_test = _load_house()
-    print(house_information_test)
-    my_scaler = _load_scaler()
-    preprocess(house_information_test, my_scaler)
