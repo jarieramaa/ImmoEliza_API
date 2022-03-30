@@ -1,10 +1,10 @@
 """
 The idea in this module is simple:
 
-    1. Loading (from file) one row of data that is used to predict the 
+    1. Loading (from file) one row of data that is used to predict the
        price of the house. However, all the values are zeros. This is done
        because then we can be sure that our dataframe is exactly the same.
-    
+
     2. Getting dictionary from API (or in testing phase loading it from file)
 
     3. Converting all columns one by one according the dictionary.
@@ -16,148 +16,141 @@ The idea in this module is simple:
 
 
 import pickle
-from sklearn.preprocessing import StandardScaler
 import numpy as np
 import pandas as pd
 
-def save_house(house_information: dict):
+
+def _save_house(house_information: dict):
     """
     Just for testing. Saving a dictionary that was created by API
     :param house_information: Dictionary with house information.
     """
-    with open('./house_information.pickle', 'wb') as house_information_file:
+    with open("./house_information.pickle", "wb") as house_information_file:
         pickle.dump(house_information, house_information_file)
 
 
-def load_house() -> dict:
+def _load_house() -> dict:
     """
     Just for testing. Loading a dictionary that was created by API
     :return: Dictionary with house information.
     """
-    with open('./house_information.pickle', 'rb') as house_information_file:
+    with open("./house_information.pickle", "rb") as house_information_file:
         house_information = pickle.load(house_information_file)
     return house_information
-   
-
-def load_scaler() -> StandardScaler:
-    """
-    This is the same scaler that was used when training the model.
-    :return: scaler
-    """
-    with open('./my_scaler.pkl', 'rb') as my_standard_scaler_file:
-        my_scaler = pickle.load(my_standard_scaler_file)
-    return my_scaler
 
 
-def load_model_row() -> pd.DataFrame:
-    """
-    Loading dataframe with one empty row
-    :return: Dataframe with one empty row
-    """
-    #save with picle to a file
-    with open("./model_row.pickle", "rb") as sample_row_file:
-        model_row = pickle.load(sample_row_file)
-        return model_row
-
-def set_swimming_pool(house_information, model_row) ->pd.DataFrame:
+def _set_swimming_pool(house_information, model_row) -> pd.DataFrame:
     """
     set column swimming pool to one if there is a swimming pool in the house
+    :house_information: dictionary with house information
+    :model_row: dataframe with one row
+    :return: dataframe where the value was added
     """
     if house_information.get("Swimming pool"):
         model_row["Swimming pool"] = 1
         return model_row
-    
+    return model_row
 
-def set_living_area(house_information, model_row) ->pd.DataFrame:
+
+def _set_living_area(house_information, model_row) -> pd.DataFrame:
     """
-    set 'living area' for the model row. Also some prescaling 
+    set 'living area' for the model row. Also some prescaling
     for the value is done as well. The original model didn't work
     otherwise.
     :house_information: dictionary with house information
     :model_row: dataframe with one row
-    :return: dataframe with added 'living area'
+    :return: dataframe where the value was added
     """
     original_value = house_information.get("Living area")
+    floor, ceiling = 0, 1
+    _min, _max = 15, 800
+    model_row["Living area"] = (original_value - _min) / (_max - _min) * (
+        ceiling - floor
+    ) + floor
+    return model_row
+
+
+def _set_land_area(house_information, model_row) -> pd.DataFrame:
+    """
+    set 'land area' for the model row. Also some prescaling
+    for the value is done as well. The original model didn't work
+    otherwise.
+    :house_information: dictionary with house information
+    :model_row: dataframe with one row
+    :return: dataframe where the value was added
+    """
+    print("#"*100)
+    print(model_row.shape)
+    original_value = house_information.get("Land area")
     print(original_value)
-    a, b = 0, 1
-    x, y = 15, 800
-    model_row["Living area"] = (original_value - x) / (y - x) * (b - a) + a
+    floor, ceiling = 0, 1
+    _min, _max = 15, 800
+    model_row["Surface of the plot"] = (original_value - _min) / (_max - _min) * (
+        ceiling - floor
+    ) + floor
+    print(model_row.shape)
+    print("#"*100)
     return model_row
 
 
-def set_land_area(house_information, model_row) -> pd.DataFrame:
+def _set_kitchen_type(house_information, model_row) -> pd.DataFrame:
     """
-    set land area for the model row
+    convert string to numeric value
+    :house_information: dictionary with house information
+    :model_row: dataframe with one row
+    :return: dataframe where the value was added
     """
-    model_row["Surface of the plot"] = house_information.get("Land area")
-    return model_row
-
-
-def set_kitchen_type(house_information, model_row) -> pd.DataFrame:
-    """convert string to numeric value
-    :value: a string that is converted
-    :return: integer that replaces the original string"""
     value = house_information.get("Kitchen type")
     converted_value = 0
-    if value == "Hyper equipped" or value == "USA hyper equipped":
+    if value in ("Hyper equipped", "USA hyper equipped"):
         converted_value = 3
-    elif value == "Semi equipped" or value == "USA semi equipped":
+    elif value in ("Semi equipped", "USA semi equipped"):
         converted_value = 2
-    elif value == "Installed" or value == "USA installed":
+    elif value in ("Installed", "USA installed"):
         converted_value = 1
-    elif value == "Not installed" or value == "USA uninstalled":
+    elif value in ("Not installed", "USA uninstalled"):
         converted_value = 0
     model_row["Kitchen type"] = converted_value
     return model_row
 
-def set_energy_class(house_information, model_row) -> pd.DataFrame:
-    """convert string to numeric value
-    :value: a string that is converted
-    :return: integer that replaces the original string"""
+
+def _set_energy_class(house_information, model_row) -> pd.DataFrame:
+    """converting energy class to numeric value
+    :house_information: dictionary with house information
+    :model_row: dataframe with one row
+    :return: dataframe where the value was added
+    """
     value = house_information.get("Energy class")
     converted_value = 0
-    if value == "G_F":
-        converted_value = 0
-    elif value == "G_D":
-        converted_value = 0.5
-    elif value == "G_C":
-        converted_value = 1
-    elif value == "G":
-        converted_value = 1.5
-    elif value == "F_D":
-        converted_value = 2
-    elif value == "F_B":
-        converted_value = 2.5
-    elif value == "F":
-        converted_value = 3
-    elif value == "E_B":
-        converted_value = 3.5
-    elif value == "E":
-        converted_value = 4
-    elif value == "D_C":
-        converted_value = 4.5
-    elif value == "D":
-        converted_value = 5
-    elif value == "C_B":
-        converted_value = 5.5
-    elif value == "C":
-        converted_value = 6
-    elif value == "B":
-        converted_value = 6.5
-    elif value == "A":
-        converted_value = 7
-    elif value == "A+":
-        converted_value = 7.5
-    elif value == "A++":
-        converted_value = 8
-    elif value == "Not specified":
-        converted_value = 0
-    else:
-        converted_value = 0
+    energy_options = {
+        "G_F": 0,
+        "G_D": 0.5,
+        "G_C": 1,
+        "G": 1.5,
+        "F_D": 2,
+        "F_B": 2.5,
+        "F": 3,
+        "E_B": 3.5,
+        "E": 4,
+        "D_C": 4.5,
+        "D": 5,
+        "C_B": 5.5,
+        "C": 6,
+        "B": 6.5,
+        "A": 7,
+        "A+": 7.5,
+        "A++": 8,
+        "Not specified": 0,
+    }
+    if value in energy_options.keys():
+        converted_value = energy_options.get(value)
+    print("value:",value)
+    print("converted value:", converted_value)
     model_row["Energy class"] = converted_value
     return model_row
 
-def set_property_subtype(house_information, model_row) -> pd.DataFrame:
+
+def _set_property_subtype(house_information, model_row) -> pd.DataFrame:
     """
     set property subtype for the model row
     :house_information: dictionary with house information
@@ -170,7 +163,8 @@ def set_property_subtype(house_information, model_row) -> pd.DataFrame:
         model_row[value] = 1
     return model_row
 
-def set_post_code(house_information, model_row) -> pd.DataFrame:
+
+def _set_post_code(house_information, model_row) -> pd.DataFrame:
     """
     set 'post code' for the model row
     :house_information: dictionary with house information
@@ -184,36 +178,37 @@ def set_post_code(house_information, model_row) -> pd.DataFrame:
     return model_row
 
 
-def preprocess(house_information: dict, my_scaler: StandardScaler) -> np.ndarray:
+def preprocess(house_information: dict, model_row :pd.DataFrame) -> np.ndarray:
     """
-    Converting the house information ready for use with prediction model. 
-    1. Converting non-numeric values to numeric values, 
-    2. Taking care of missing values, 
-    3. Converting values to dummies. 
-    :param house_information: Dictionary with house information.
+    Converting the house information ready for use with prediction model.
+    1. Converting non-numeric values to numeric values,
+    2. Taking care of missing values,
+    3. Converting values to dummies.
+    param :
+    :house_information: Dictionary with house information.
+    :std_scaler: Standard scaler that was used to train the model.
+    :model_row: Dataframe with one row, this contains all required columns and onw row with zeros.
     :return: Dictionary with cleaned house information. Also a possible error message
     """
-    model_row = load_model_row()
-    model_row = set_swimming_pool(house_information, model_row)
-    model_row = set_living_area(house_information, model_row)
-    model_row = set_land_area(house_information, model_row)
-    model_row = set_kitchen_type(house_information, model_row)
-    model_row = set_energy_class(house_information, model_row)
-    model_row = set_property_subtype(house_information, model_row)
-    model_row = set_post_code(house_information, model_row)
+    model_row = _set_swimming_pool(house_information, model_row)
+    model_row = _set_living_area(house_information, model_row)
+    model_row = _set_land_area(house_information, model_row)
+    model_row = _set_kitchen_type(house_information, model_row)
+    model_row = _set_energy_class(house_information, model_row)
+    model_row = _set_property_subtype(house_information, model_row)
+    model_row = _set_post_code(house_information, model_row)
+    print("MODEL ROW:", model_row)
+    
 
-    x_test = model_row.to_numpy()
 
-    with open('./x_test_api.pkl', 'wb') as final_file:
-        pickle.dump(x_test, final_file)
+    with open("./x_test_api.pkl", "wb") as final_file:
+        pickle.dump(model_row, final_file)
 
-    return 0, ""
+    return model_row
 
 
 if __name__ == "__main__":
-    house_information = load_house()
-    print(house_information)
-    my_scaler = load_scaler()
-    preprocess(house_information, my_scaler)
-
-
+    house_information_test = _load_house()
+    print(house_information_test)
+    my_scaler = _load_scaler()
+    preprocess(house_information_test, my_scaler)

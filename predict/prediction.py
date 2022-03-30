@@ -9,9 +9,10 @@ import pickle
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from sklearn.preprocessing import StandardScaler
 
 
-def load_theta() -> np.ndarray:
+def _load_theta() -> np.ndarray:
     """
     load the theta that is used to calculate the predictions
     """
@@ -22,21 +23,22 @@ def load_theta() -> np.ndarray:
         return theta
 
 
-def load_x_test_data() -> pd.DataFrame:
+def _load_x_test_data() -> pd.DataFrame:
     """
     read test data from csv file. This is used only for testing
     :return: DataFrame that contains the test data
     """
     with open(
-        "/Users/jari/DATA/Projects/ImmoEliza_API/predict/x_test_api.pkl", "rb"
+        "/Users/jari/DATA/Projects/ImmoEliza_API/predict/X_test_sample.pickle", "rb"
     ) as x_test_file:
         x_test = pickle.load(x_test_file)
         print("LOAD - X_test.shape", x_test.shape)
         print("LOAD - type(X_test)", type(x_test))
+        print("X_TEST FILEc: ", x_test)
         return x_test
 
 
-def load_y_test_data() -> pd.DataFrame:
+def _load_y_test_data() -> pd.DataFrame:
     """
     Read some test data from csv file. This is not used only for testing
     :return: DataFrame that contains the test data
@@ -49,8 +51,17 @@ def load_y_test_data() -> pd.DataFrame:
         print("LOAD - type(y_test)", type(y_test))
         return y_test
 
+def _load_scaler() -> StandardScaler:
+    """
+    This is the same scaler that was used when training the model.
+    :return: scaler
+    """
+    with open("/Users/jari/DATA/Projects/ImmoEliza_API/model/my_scaler.pkl", "rb") as my_standard_scaler_file:
+        my_loaded_scaler = pickle.load(my_standard_scaler_file)
+    return my_loaded_scaler
 
-def model(x_test: np.ndarray, theta: np.ndarray) -> np.ndarray:
+
+def _model(x_test: np.ndarray, theta: np.ndarray) -> np.ndarray:
     """
     This function is used to calculate the predictions of the model
     param:
@@ -60,7 +71,7 @@ def model(x_test: np.ndarray, theta: np.ndarray) -> np.ndarray:
     return x_test.dot(theta)
 
 
-def stack_ones(x_test: np.ndarray) -> np.ndarray:
+def _stack_ones(x_test: np.ndarray) -> np.ndarray:
     """adding ones to the input data
     :X_test: input data
     """
@@ -69,7 +80,7 @@ def stack_ones(x_test: np.ndarray) -> np.ndarray:
     return x_test
 
 
-def show_scatter(y_test, predictions):
+def _show_scatter(y_test, predictions):
     """
     This function is used to show the scatter plot of the predictions.
     Only needed during testing
@@ -83,7 +94,7 @@ def show_scatter(y_test, predictions):
     plt.show()
 
 
-def coef_determination(y_test, pred):
+def _coef_determination(y_test, pred):
     """
     Calculate how good the model actually is.
     :y: actual values
@@ -94,39 +105,38 @@ def coef_determination(y_test, pred):
     return 1 - u_value / v_value
 
 
-def predict(x_test: np.ndarray) -> int:
+def predict(x_test: np.ndarray, theta: np.ndarray, std_scaler: StandardScaler) -> int:
     """
     This function is used to predict house price.
     :X_test :
     """
-    x_test = stack_ones(x_test)
-    theta = load_theta()
-    predictions = model(x_test, theta)
+    x_test = x_test.to_numpy()
+    #x_test = std_scaler.transform(x_test)
+    x_test = _stack_ones(x_test)
+    predictions = _model(x_test, theta)
     value = predictions[0][0]
-    print(value/1000, "keur")
-
-
-def predict_testing(x_test: np.ndarray, y_test: np.ndarray):
-    """
-    This function is used to testing the predictions.
-    It's not needed in the final version
-    """
-    x_test = stack_ones(x_test)
-    theta = load_theta()
-    predictions = model(x_test, theta)
-    #print("coef_determination", coef_determination(y_test, predictions))
-    #show_scatter(y_test, predictions)
-    #print(theta)
+    print("#"*100)
+    print("ESTIMATE:",value , "eur")
+    return value
 
 
 def test_predictions():
     """
     This function is used to test the predictions
     """
-    x_test = load_x_test_data()
-    print('x_test type', type(x_test))
-    y_test = load_y_test_data()
-    predict(x_test)
+    X_test = _load_x_test_data()
+    print("X_test.shape", X_test.shape)
+    y_test = _load_y_test_data()
+    theta = _load_theta()
+    std_scaler = _load_scaler()
+    #X_test = std_scaler.transform(X_test)
+    X_test = _stack_ones(X_test)
+    predictions = _model(X_test, theta)
+    _show_scatter(y_test, predictions)
+    print("#"*100)
+    print(predictions)
+    #predict(X_test)
+
 
 if __name__ == "__main__":
     test_predictions()
