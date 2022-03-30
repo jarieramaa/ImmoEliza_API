@@ -9,7 +9,6 @@ import pickle
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
-from sklearn.preprocessing import StandardScaler
 
 
 def _load_theta() -> np.ndarray:
@@ -50,15 +49,6 @@ def _load_y_test_data() -> pd.DataFrame:
         print("LOAD - y_test.shape", y_test.shape)
         print("LOAD - type(y_test)", type(y_test))
         return y_test
-
-def _load_scaler() -> StandardScaler:
-    """
-    This is the same scaler that was used when training the model.
-    :return: scaler
-    """
-    with open("/Users/jari/DATA/Projects/ImmoEliza_API/model/my_scaler.pkl", "rb") as my_standard_scaler_file:
-        my_loaded_scaler = pickle.load(my_standard_scaler_file)
-    return my_loaded_scaler
 
 
 def _model(x_test: np.ndarray, theta: np.ndarray) -> np.ndarray:
@@ -105,7 +95,7 @@ def _coef_determination(y_test, pred):
     return 1 - u_value / v_value
 
 
-def predict(x_test: np.ndarray, theta: np.ndarray, std_scaler: StandardScaler) -> int:
+def predict(x_test: np.ndarray, theta: np.ndarray) -> int:
     """
     This function is used to predict house price.
     :X_test :

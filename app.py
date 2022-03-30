@@ -15,7 +15,6 @@
 import json
 import pickle
 import numpy as np
-from sklearn.preprocessing import StandardScaler
 from flask import (
     Flask,
     request,
@@ -110,16 +109,6 @@ def _convert_to_bool(value, field_name) -> tuple[bool, str]:
     )
 
 
-def _load_scaler() -> StandardScaler:
-    """
-    This is the same scaler that was used when training the model.
-    :return: scaler
-    """
-    with open("./model/my_scaler.pkl", "rb") as my_standard_scaler_file:
-        my_loaded_scaler = pickle.load(my_standard_scaler_file)
-    return my_loaded_scaler
-
-
 def _load_theta() -> np.ndarray:
     """
     load the theta that is used to calculate the predictions
@@ -190,11 +179,10 @@ def house_api() -> dict:
         "Post code": post_code,
     }
 
-    my_scaler = _load_scaler()
     my_theta = _load_theta()
     model_row = _load_model_row()
     cleaned_data = cleaning_data.preprocess(house_information, model_row)
-    estimate = prediction.predict(cleaned_data, my_theta, my_scaler)
+    estimate = prediction.predict(cleaned_data, my_theta)
     return {"prediction": estimate}
 
 
