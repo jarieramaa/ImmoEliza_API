@@ -13,6 +13,8 @@
 """
 
 import json
+import pickle
+from typing import Optional
 
 import preprocessing.cleaning_data as cleaning_data
 import predict.prediction as prediction
@@ -105,8 +107,8 @@ def convert_to_bool(value, field_name) -> tuple[bool, str]:
     )
 
 
-@app.route("/house", methods=["POST"])
-def salary_api() -> dict:
+@app.route("/predict", methods=["POST"])
+def house_api() -> dict:
     """
     This API gets house information.
     :return: Dictionary the price estimate for the house or error message.
@@ -115,6 +117,7 @@ def salary_api() -> dict:
 
     property_subtype = content.get("property-subtype")
     living_area = content.get("living-area")
+    land_area = content.get("land-area")
     kitchen_type = content.get("kitchen-type")
     swimming_pool = content.get("swimming-pool")
     energy_class = content.get("energy-class")
@@ -131,6 +134,8 @@ def salary_api() -> dict:
 
     living_area, error_message = convert_to_int(living_area, "living area")
     error_messages += error_message
+    land_area, error_message = convert_to_int(land_area, "land area")
+    error_messages += error_message
     house, error_message = convert_to_int(house, "house")
     error_messages += error_message
     post_code, error_message = convert_to_int(post_code, "post code")
@@ -144,6 +149,7 @@ def salary_api() -> dict:
     house_information = {
         "property sub-type": property_subtype,
         "Living area": living_area,
+        "Land area": land_area,
         "Kitchen type": kitchen_type,
         "Swimming pool": swimming_pool,
         "Energy class": energy_class,
@@ -152,17 +158,52 @@ def salary_api() -> dict:
         "Post code": post_code,
     }
 
-    if not error_messages:
-        error_msgs = ""
-        cleaned_data, errors = cleaning_data.preprocess(house_information)
-        error_msgs += errors
-        prediction_result, errors = prediction.predict(cleaned_data)
-        error_msgs += errors
-        return prediction_result
-    return {"error": error_msgs}
+    # error_msgs = ""
+    cleaned_data, errors = cleaning_data.preprocess(house_information)
+    return {"prediction": "100"}
 
+
+"""    error_msgs += errors
+    with open('./model/theta.pickle', 'rb') as predictions_file:
+        theta = pickle.load(theta)
+    prediction_result, errors = prediction.predict(theta, cleaned_data)
+    error_msgs += errors
+    if len(error_messages) > 0:
+        return {"error": error_msgs}
+    return prediction_result"""
+
+
+@app.route("/", methods=["GET"])
+def api_alive() -> str:
+    """Check if the API is alive"""
+    return {"status": "alive"}
+
+
+@app.route("/predict", methods=["GET"])
+def return_data() -> str:
+    """Check if the API is alive"""
+    info_dict = { "data": " {\"living-area\": int, \"property-subtype\": \"Optional[ \"APARTMENT_BLOCK\" \
+| \"BUNGALOW\" | \"CASTLE\" | \"CHALET\" | \"COUNTRY_COTTAGE\" | \"DUPLEX\" \
+| \"EXCEPTIONAL_PROPERTY\" | \"FARMHOUSE\" | \"FLAT_STUDIO\" | \"GROUND_FLOOR\" \
+| \"KOT\" | \"LOFT\" | \"MANOR_HOUSE\" | \"MANSION\" | \"MIXED_USE_BUILDING\" \
+| \"OTHER_PROPERTY\" | \"PENTHOUSE\" | \"SERVICE_FLAT\" | \"TOWN_HOUSE\" \
+| \"TRIPLEX\" | \"VILLA\"]\", \
+\"post-code\": \"int\", \
+\"land-area\": \"Optional[int]\", \
+\"kitchen-type\": \"Optional[ \"Hyper equipped\" | \"Installed\" \
+| \"Not installed\" | \"Semi equipped\" | \"USA hyper equipped\" \
+| \"USA installed\" | \"USA semi equipped\" | \"USA uninstalled\" ]\", \
+    \"swimming-pool\": \"Optional[bool]\", \
+    \"energy-class\": \"Optional[\"A\" | \"A+\" | \"B\" | \"C\" | \"C_B\"\ \
+    | \"D\" | \"E\" | \"F\" | \"F_B\" | \"G\" | \"G_C\" | \"G_D\" ]\", \
+\"street\": \"Optional(str)\", \
+\"house-number\": \"Optional(int)\" "}
+    return info_dict
 
 if __name__ == "__main__":
     with open("./preprocessing/options.json", "r", encoding="utf-8") as json_file:
         JSON_FILE = json.load(json_file)
-    app.run(debug=True)
+    app.run(debug=True) # app.run(port=5000)
+
+
+    
