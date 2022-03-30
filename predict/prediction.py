@@ -24,11 +24,11 @@ def load_theta() -> np.ndarray:
 
 def load_x_test_data() -> pd.DataFrame:
     """
-    read test data from csv file. This is not used only for testing
+    read test data from csv file. This is used only for testing
     :return: DataFrame that contains the test data
     """
     with open(
-        "/Users/jari/DATA/Projects/ImmoEliza_API/predict/X_test_sample.pickle", "rb"
+        "/Users/jari/DATA/Projects/ImmoEliza_API/predict/x_test_api.pkl", "rb"
     ) as x_test_file:
         x_test = pickle.load(x_test_file)
         print("LOAD - X_test.shape", x_test.shape)
@@ -102,7 +102,8 @@ def predict(x_test: np.ndarray) -> int:
     x_test = stack_ones(x_test)
     theta = load_theta()
     predictions = model(x_test, theta)
-    print(predictions)
+    value = predictions[0][0]
+    print(value/1000, "keur")
 
 
 def predict_testing(x_test: np.ndarray, y_test: np.ndarray):
@@ -113,9 +114,9 @@ def predict_testing(x_test: np.ndarray, y_test: np.ndarray):
     x_test = stack_ones(x_test)
     theta = load_theta()
     predictions = model(x_test, theta)
-    print("coef_determination", coef_determination(y_test, predictions))
-    show_scatter(y_test, predictions)
-    print(predictions)
+    #print("coef_determination", coef_determination(y_test, predictions))
+    #show_scatter(y_test, predictions)
+    #print(theta)
 
 
 def test_predictions():
@@ -123,9 +124,9 @@ def test_predictions():
     This function is used to test the predictions
     """
     x_test = load_x_test_data()
+    print('x_test type', type(x_test))
     y_test = load_y_test_data()
-    print("y_test.shape", y_test.shape)
-    predict_testing(x_test, y_test)
+    predict(x_test)
 
-
-test_predictions()
+if __name__ == "__main__":
+    test_predictions()
