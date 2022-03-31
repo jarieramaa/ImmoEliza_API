@@ -22,7 +22,7 @@ matplotlib-3.5.1
     				       'MANSION' | 'MIXED_USE_BUILDING'| 'OTHER_PROPERTY' |
     				       'PENTHOUSE' | 'SERVICE\_FLAT' | 'TOWN_HOUSE' | 'TRIPLEX' |
     				       'VILLA']
-    "post-code": [int],
+    "zip-code": int,
     "land-area": Optional[int],
     "kitchen-type": Optional['Hyper equipped'| 'Installed'|'Not installed'|
                              'Semi equipped'|'USA hyper equipped'|'USA installed'|
