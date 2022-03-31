@@ -195,13 +195,19 @@ def house_api() -> dict:
 
 @app.route("/", methods=["GET"])
 def api_alive() -> dict:
-    """Check if the API is alive"""
+    """
+    Check if the API is alive
+    :return: Dictionary with the status of the API
+    """
     return {"status": "alive"}
 
 
 @app.route("/predict", methods=["GET"])
 def return_data() -> dict:
-    """return model dictionary"""
+    """
+    return model dictionary
+    :return: Dictionary with the model
+    """
     info_dict = ""
     with open("./model/data.json", "r", encoding="utf-8") as json_data_file:
         info_dict = json.load(json_data_file)
@@ -212,4 +218,3 @@ if __name__ == "__main__":
     with open("./model/options.json", "r", encoding="utf-8") as json_file:
         _JSON_FILE = json.load(json_file)
     app.run(host="0.0.0.0", port=5001, debug=True)
-    # app.run(host = "0.0.0.0", port = 5000)
