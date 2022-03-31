@@ -12,6 +12,7 @@
 ("house-number")
 """
 
+from distutils.log import debug
 import json
 import pickle
 import numpy as np
@@ -20,6 +21,7 @@ from flask import (
     request,
 )
 import pandas as pd
+from typing import Union
 
 from preprocessing import cleaning_data
 from predict import prediction
@@ -60,20 +62,19 @@ def _check_mandatory_fields(
     """
     missing_fields = ""
     if living_area is None:
-        missing_fields += "'living area' "
+        missing_fields += "'living-area' "
     if post_code is None:
-        missing_fields += "'post code' "
+        missing_fields += "'post-code' "
     if property_subtype is None:
-        missing_fields += "'property subtype' "
+        missing_fields += "'property-subtype' "
     if len(missing_fields) > 0:
         return (
-            "'Living area', 'post code' and 'property subtype' "
+            "'Living-area', 'post-code' and 'property-subtype' "
             + f"are mandatory fields. You are missing: {missing_fields}.{chr(10)}{chr(10)}"
         )
     return ""
 
-
-def _convert_to_int(value, field_name) -> tuple[int, str]:
+def _convert_to_int(value, field_name) -> Union[int, str]:
     """
     Convert the value to int. As the value is not mandatory, it's ok that it's 'None'
     :value : str, value that has got from the request
@@ -81,25 +82,24 @@ def _convert_to_int(value, field_name) -> tuple[int, str]:
     :return: int, that contains the result of the conversion and possible error message
     """
     if value is None:
-        return 0, ""
+        return (0, "")
     if value.isnumeric():
-        return int(value), ""
+        return (int(value), "")
     return (
         0,
-        f"The value of the field '{field_name}' is not a number"
+        f"The value of the field '{field_name}' is not a integer number"
         + f" (uncorrect value is '{value}').{chr(10)}{chr(10)}",
     )
 
 
-def _convert_to_bool(value, field_name) -> tuple[bool, str]:
+def _convert_to_bool(value, field_name) -> Union[bool, str]:
     """
     converting value to boolean
     """
-    print("start, value is:", value)
     if value is None:
-        return False, ""
+        return (False, "")
     if value.lower() == "true":
-        return True, ""
+        return (True, "")
     if value.lower() == "false":
         return False, ""
     return (
@@ -135,16 +135,24 @@ def house_api() -> dict:
     :return: Dictionary the price estimate for the house or error message.
     """
     content = request.args
+    content_json = request.get_json()
 
-    property_subtype = content.get("property-subtype")
-    living_area = content.get("living-area")
-    land_area = content.get("land-area")
-    kitchen_type = content.get("kitchen-type")
-    swimming_pool = content.get("swimming-pool")
-    energy_class = content.get("energy-class")
-    street = content.get("street-address")
-    house = content.get("house-number")
-    post_code = content.get("post-code")
+    print("#"*100)
+
+    print(content_json)
+    print("#"*100)
+
+
+
+    property_subtype = content_json.get("property-subtype")
+    living_area = content_json.get("living-area")
+    land_area = content_json.get("land-area")
+    kitchen_type = content_json.get("kitchen-type")
+    swimming_pool = content_json.get("swimming-pool")
+    energy_class = content_json.get("energy-class")
+    street = content_json.get("street-address")
+    house = content_json.get("house-number")
+    post_code = content_json.get("post-code")
 
     error_messages = ""
     error_messages += _check_mandatory_fields(living_area, post_code, property_subtype)
@@ -153,15 +161,15 @@ def house_api() -> dict:
     error_messages += _check_options(energy_class, "energy_class")
     error_messages += _check_options(post_code, "post_code")
 
-    living_area, error_message = _convert_to_int(living_area, "living area")
+    living_area, error_message = _convert_to_int(living_area, "living-area")
     error_messages += error_message
-    land_area, error_message = _convert_to_int(land_area, "land area")
+    land_area, error_message = _convert_to_int(land_area, "land-area")
     error_messages += error_message
     house, error_message = _convert_to_int(house, "house")
     error_messages += error_message
-    post_code, error_message = _convert_to_int(post_code, "post code")
+    post_code, error_message = _convert_to_int(post_code, "post-code")
     error_messages += error_message
-    swimming_pool, error_message = _convert_to_bool(swimming_pool, "swimming pool")
+    swimming_pool, error_message = _convert_to_bool(swimming_pool, "swimming-pool")
     error_messages += error_message
 
     if len(error_messages) > 0:
@@ -187,14 +195,14 @@ def house_api() -> dict:
 
 
 @app.route("/", methods=["GET"])
-def api_alive() -> str:
+def api_alive() -> dict:
     """Check if the API is alive"""
     return {"status": "alive"}
 
 
 @app.route("/predict", methods=["GET"])
-def return_data() -> str:
-    """Check if the API is alive"""
+def return_data() -> dict:
+    """return model dictionary"""
     info_dict = {
         "data": ' {"living-area": int, "property-subtype": "Optional[ "APARTMENT_BLOCK" \
 | "BUNGALOW" | "CASTLE" | "CHALET" | "COUNTRY_COTTAGE" | "DUPLEX" \
@@ -215,8 +223,11 @@ def return_data() -> str:
     }
     return info_dict
 
+    
+
 
 if __name__ == "__main__":
     with open("./model/options.json", "r", encoding="utf-8") as json_file:
         _JSON_FILE = json.load(json_file)
-    app.run(debug=True)  # app.run(port=5000)
+    app.run(port = 5000, debug = True)
+    #app.run(host = "0.0.0.0", port = 5000) 

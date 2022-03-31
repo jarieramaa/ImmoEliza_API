@@ -71,17 +71,12 @@ def _set_land_area(house_information, model_row) -> pd.DataFrame:
     :model_row: dataframe with one row
     :return: dataframe where the value was added
     """
-    print("#"*100)
-    print(model_row.shape)
     original_value = house_information.get("Land area")
-    print(original_value)
     floor, ceiling = 0, 1
     _min, _max = 15, 800
     model_row["Surface of the plot"] = (original_value - _min) / (_max - _min) * (
         ceiling - floor
     ) + floor
-    print(model_row.shape)
-    print("#"*100)
     return model_row
 
 
@@ -136,8 +131,6 @@ def _set_energy_class(house_information, model_row) -> pd.DataFrame:
     }
     if value in energy_options.keys():
         converted_value = energy_options.get(value)
-    print("value:",value)
-    print("converted value:", converted_value)
     model_row["Energy class"] = converted_value
     return model_row
 
@@ -189,7 +182,6 @@ def preprocess(house_information: dict, model_row :pd.DataFrame) -> np.ndarray:
     model_row = _set_energy_class(house_information, model_row)
     model_row = _set_property_subtype(house_information, model_row)
     model_row = _set_post_code(house_information, model_row)
-    print("MODEL ROW:", model_row)
 
     return model_row
 

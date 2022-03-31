@@ -1,17 +1,39 @@
 # ImmoEliza_API
 
+Numpy numpy-1.22.3
+flask-2.1.0
+pandas-1.4.1
+requests-2.27.1
+pycurl-7.45.1
+matplotlib-3.5.1
+
+
 
 ### data description
-'''{
-  <br> "data": {
-  <br>  "living-area": int,
-  <br>  "property-subtype":['APARTMENT\_BLOCK' | 'BUNGALOW' | 'CASTLE' | 'CHALET' | 'COUNTRY\_COTTAGE' |'DUPLEX' | 'EXCEPTIONAL\_PROPERTY' | 'FARMHOUSE' | 'FLAT\_STUDIO' | 'GROUND\_FLOOR' | 'KOT' | 'LOFT' | 'MANOR\_HOUSE' | 'MANSION' | 'MIXED\_USE\_BUILDING'| 'OTHER\_PROPERTY' | 'PENTHOUSE' | 'SERVICE\_FLAT' | 'TOWN\_HOUSE' | 'TRIPLEX' | 'VILLA']
-   <br> "post-code": int,
-   <br>  "land-area": Optional[int],
-   <br>  "kitchen-type": Optional['Hyper equipped'| 'Installed'|'Not installed'|'Semi equipped'|'USA hyper equipped'|'USA installed'|'USA semi equipped'|'USA uninstalled']
-   <br>  "swimming-pool": Optional[bool],
-   <br>  "energy-class"Optional : ['A'| 'A+'| 'B'| 'C'| 'C\_B'| 'D'| 'E'| 'F'| 'F\_B'| 'G'| 'G\_C'| 'G\_D']
-   <br>  "street": Optional(Str)
-    <br> "house-number" : Optional(int)
-<br>   }
-<br>}'''
+
+```json
+{
+  "data": {
+    "living-area": int,
+    "property-subtype": ['APARTMENT_BLOCK' | 'BUNGALOW' | 'CASTLE' |
+    				       'CHALET' | 'COUNTRY_COTTAGE' |'DUPLEX' | 
+    				       'EXCEPTIONAL_PROPERTY' | 'FARMHOUSE' | 'FLAT_STUDIO' |
+    				       'GROUND_FLOOR' | 'KOT' | 'LOFT' | 'MANOR_HOUSE' |
+    				       'MANSION' | 'MIXED_USE_BUILDING'| 'OTHER_PROPERTY' |
+    				       'PENTHOUSE' | 'SERVICE\_FLAT' | 'TOWN_HOUSE' | 'TRIPLEX' |
+    				       'VILLA']
+    "post-code": [int],
+    "land-area": Optional[int],
+    "kitchen-type": Optional['Hyper equipped'| 'Installed'|'Not installed'|
+                             'Semi equipped'|'USA hyper equipped'|'USA installed'|
+                             'USA semi equipped'|'USA uninstalled',
+    "swimming-pool" : Optional[bool],
+    "energy-class" : "Optional : ['A'| 'A+'| 'B'| 'C'| 'C\_B'| 'D'|
+    								   'E'| 'F'| 'F\_B'| 'G'| 'G\_C'| 'G\_D']
+    "street-address": Optional(Str)
+    "house-number" : Optional(int)
+    ]
+  }
+}
+```
+
