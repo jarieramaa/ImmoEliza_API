@@ -38,7 +38,7 @@ def _set_swimming_pool(house_information, model_row) -> pd.DataFrame:
     :model_row: dataframe with one row
     :return: dataframe where the value was added
     """
-    if house_information.get("Swimming pool"):
+    if house_information.get("swimming-pool"):
         model_row["Swimming pool"] = 1
         return model_row
     return model_row
@@ -53,7 +53,9 @@ def _set_living_area(house_information, model_row) -> pd.DataFrame:
     :model_row: dataframe with one row
     :return: dataframe where the value was added
     """
-    original_value = house_information.get("Living area")
+    original_value = house_information.get("living-area")
+    if original_value is None:
+        return model_row
     floor, ceiling = 0, 1
     _min, _max = 15, 800
     model_row["Living area"] = (original_value - _min) / (_max - _min) * (
@@ -71,7 +73,9 @@ def _set_land_area(house_information, model_row) -> pd.DataFrame:
     :model_row: dataframe with one row
     :return: dataframe where the value was added
     """
-    original_value = house_information.get("Land area")
+    original_value = house_information.get("land-area")
+    if original_value is None:
+        return model_row
     floor, ceiling = 0, 1
     _min, _max = 15, 800
     model_row["Surface of the plot"] = (original_value - _min) / (_max - _min) * (
@@ -87,7 +91,7 @@ def _set_kitchen_type(house_information, model_row) -> pd.DataFrame:
     :model_row: dataframe with one row
     :return: dataframe where the value was added
     """
-    value = house_information.get("Kitchen type")
+    value = house_information.get("kitchen-type")
     converted_value = 0
     if value in ("Hyper equipped", "USA hyper equipped"):
         converted_value = 3
@@ -107,7 +111,7 @@ def _set_energy_class(house_information, model_row) -> pd.DataFrame:
     :model_row: dataframe with one row
     :return: dataframe where the value was added
     """
-    value = house_information.get("Energy class")
+    value = house_information.get("energy-class")
     converted_value = 0
     energy_options = {
         "G_F": 0,
@@ -143,7 +147,7 @@ def _set_property_subtype(house_information, model_row) -> pd.DataFrame:
     :return: dataframe with added property subtype
     """
     columns_list = model_row.columns.values.tolist()
-    value = house_information.get("property sub-type")
+    value = house_information.get("property-subtype")
     if value in columns_list:
         model_row[value] = 1
     return model_row
@@ -157,7 +161,7 @@ def _set_post_code(house_information, model_row) -> pd.DataFrame:
     :return: dataframe with added 'post code'
     """
     columns_list = model_row.columns.values.tolist()
-    value = str(house_information.get("Post code"))
+    value = str(house_information.get("zip-code"))
     if value in columns_list:
         model_row[value] = 1
     return model_row
