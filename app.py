@@ -13,8 +13,6 @@ from flask import (
 )
 import pandas as pd
 
-
-
 from preprocessing import cleaning_data
 from predict import prediction
 
@@ -109,8 +107,7 @@ def _check_int(content_json: dict, field_name) -> str:
         return ""
     return (
         f"The value of the field '{field_name}' is not a integer number (uncorrect value"
-        + f"is '{value}' and the type is {type(value)}). {chr(10)}"
-    )
+        + f"is '{value}' and the type is {type(value)}). {chr(10)}")
 
 
 def _check_bool(content_json: dict, field_name) -> str:
@@ -127,9 +124,33 @@ def _check_bool(content_json: dict, field_name) -> str:
     return f"The value of the field '{field_name}' is not a boolean value (uncorrect value \
         is '{value}' and the type is {type(value)}). {chr(10)}"
 
-def _check_types(content_json: dict):
+def _check_types(content_json: dict) -> str:
+    """
+    This function checks if the values are correct types and returns
+    an error message if it is not.
+    :param content_json: the dictionary that has got from the request
+    :return: str, that contains the error message(s) if there is no errors. If
+    there is no errors, it returns an empty string.
+    """
     content_json_keys = content_json.keys()
-    pass
+    _errors = ""
+    for property_name in content_json_keys:
+        type_of_data = _HOUSE_META.get(property_name).get("type")
+        if type_of_data == "int":
+            _errors += _check_int(content_json, property_name)
+        elif type_of_data == "bool":
+            _errors += _check_bool(content_json, property_name)
+        elif type_of_data == "options":
+            _errors += _check_options(content_json, property_name)
+        elif type_of_data == "str":
+            pass
+        else:
+            _errors += f"Error in properties_meta.json file . The type of the \
+                field '{property_name}' is not valid (uncorrect \
+                    value is '{type_of_data}'. {chr(10)}"
+    return _errors
+            
+
 
 def _check_unwanted(content_json: dict) -> str:
     """
@@ -162,28 +183,7 @@ def house_api() -> dict:
 
     _errors = ""
     _errors = _check_mandatory_fields(content_json)
-
-    #these are used in the prediction:
-    _errors += _check_options(content_json, "property-subtype")
-    _errors += _check_int(content_json, "area")
-    _errors += _check_options(content_json, "kitchen-type")
-    _errors += _check_options(content_json, "energy-class")
-    _errors += _check_options(content_json, "zip-code")
-    _errors += _check_int(content_json, "land-area")
-    _errors += _check_int(content_json, "house-number")
-    _errors += _check_bool(content_json, "swimming-pool")
-
-    #these are not used in the prediction, but values are checked anyway:
-    _errors += _check_int(content_json, "rooms-number")
-    _errors += _check_bool(content_json, "garden")
-    _errors += _check_int(content_json, "garden-area")
-    _errors += _check_bool(content_json, "furnished")
-    _errors += _check_bool(content_json, "open-fire")
-    _errors += _check_bool(content_json, "terrace")
-    _errors += _check_int(content_json, "terrace-area")
-    _errors += _check_int(content_json, "facades-number")
-    _errors += _check_options(content_json, "building-state")
-
+    _errors += _check_types(content_json)
     _errors += _check_unwanted(content_json)
 
     if len(_errors) > 0:
@@ -222,10 +222,5 @@ if __name__ == "__main__":
         _JSON_FILE = json.load(json_file)
     with open("./model/properties_meta.json", "r", encoding="utf-8") as json_file:
         _HOUSE_META = json.load(json_file)
-    #FOR HEROKU
-    #port = int(os.environ.get("PORT", 5001))
-
-    port = os.environ.get("PORT", 5000)
-    app.run(host="0.0.0.0", port=port)
-    #app.run(host="0.0.0.0", threaded=True, port=port)
-    #app.run(host="0.0.0.0", port=5001, debug=True)
+    port = os.environ.get("PORT", 5001)
+    app.run(host="0.0.0.0", port=port, debug=True)

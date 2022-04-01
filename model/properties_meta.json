@@ -115,7 +115,7 @@
     },
     "street": {
         "mandatory": false,
-        "type": "string",
+        "type": "str",
         "df_name": "<NOT VALID>"
     },
     "rooms-number":
