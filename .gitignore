@@ -130,7 +130,6 @@ dmypy.json
 
 Dockerfile
 requirements.txt
-/immoapi
-/immodemo
-/immoenv
+
+immo_env/
 
