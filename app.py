@@ -1,7 +1,7 @@
 """
 This API is used to calculate the price estimate for a house
 """
-
+import os
 import json
 from typing import Union
 import pickle
@@ -14,6 +14,7 @@ from flask import (
 import pandas as pd
 
 
+
 from preprocessing import cleaning_data
 from predict import prediction
 
@@ -23,7 +24,7 @@ app = Flask(__name__)
 """JSON_FILE is a dictionary that contains the options for each fields,
 for example {'energy classes' : 'A++', 'A+' etc.}  """
 _JSON_FILE = None
-_HOUSE_PROP = None
+_HOUSE_META = None
 
 
 def _check_options(content_json: dict, field_opt: str) -> str:
@@ -57,8 +58,8 @@ def _check_mandatory_fields(content_json: dict) -> str:
     """
     #list of mandatory_properties (for ex. 'area', 'zip-code' and 'property-subtype')
     mandatory_properties = []
-    for prop in _HOUSE_PROP.keys():
-        if _HOUSE_PROP.get(prop).get("mandatory"):
+    for prop in _HOUSE_META.keys():
+        if _HOUSE_META.get(prop).get("mandatory"):
             mandatory_properties.append(prop)
 
     missing_fields = ""
@@ -127,6 +128,7 @@ def _check_bool(content_json: dict, field_name) -> str:
         is '{value}' and the type is {type(value)}). {chr(10)}"
 
 def _check_types(content_json: dict):
+    content_json_keys = content_json.keys()
     pass
 
 def _check_unwanted(content_json: dict) -> str:
@@ -136,7 +138,7 @@ def _check_unwanted(content_json: dict) -> str:
     :param content_json: the dictionary that has got from the request
     :return: str, that contains the error message or None if there is no errors
     """
-    allowed_keys = _HOUSE_PROP.keys()
+    allowed_keys = _HOUSE_META.keys()
     request_keys = content_json.keys()
     unwanted_keys = []
 
@@ -219,5 +221,8 @@ if __name__ == "__main__":
     with open("./model/options.json", "r", encoding="utf-8") as json_file:
         _JSON_FILE = json.load(json_file)
     with open("./model/properties_meta.json", "r", encoding="utf-8") as json_file:
-        _HOUSE_PROP = json.load(json_file)
-    app.run(host="0.0.0.0", port=5001, debug=True)
+        _HOUSE_META = json.load(json_file)
+    #FOR HEROKU
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host="0.0.0.0", threaded=True, port=port)
+    #app.run(host="0.0.0.0", port=5001, debug=True)
