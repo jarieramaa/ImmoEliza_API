@@ -223,6 +223,9 @@ if __name__ == "__main__":
     with open("./model/properties_meta.json", "r", encoding="utf-8") as json_file:
         _HOUSE_META = json.load(json_file)
     #FOR HEROKU
-    port = int(os.environ.get("PORT", 5001))
-    app.run(host="0.0.0.0", threaded=True, port=port)
+    #port = int(os.environ.get("PORT", 5001))
+
+    port = os.environ.get("PORT", 5000)
+    app.run(host="0.0.0.0", port=port)
+    #app.run(host="0.0.0.0", threaded=True, port=port)
     #app.run(host="0.0.0.0", port=5001, debug=True)
