@@ -53,7 +53,7 @@ def _set_living_area(house_information, model_row) -> pd.DataFrame:
     :model_row: dataframe with one row
     :return: dataframe where the value was added
     """
-    original_value = house_information.get("living-area")
+    original_value = house_information.get("area")
     if original_value is None:
         return model_row
     floor, ceiling = 0, 1
@@ -102,6 +102,16 @@ def _set_kitchen_type(house_information, model_row) -> pd.DataFrame:
     elif value in ("Not installed", "USA uninstalled"):
         converted_value = 0
     model_row["Kitchen type"] = converted_value
+    kitchen_options = {
+        "Hyper equipped": 3,
+        "USA hyper equipped": 3,
+        "Semi equipped": 2,
+        "USA semi equipped": 2,
+        "Installed": 1,
+        "USA installed": 1,
+        "Not installed": 0,
+        "USA uninstalled": 0, 
+    }
     return model_row
 
 
@@ -179,6 +189,7 @@ def preprocess(house_information: dict, model_row :pd.DataFrame) -> np.ndarray:
     :model_row: Dataframe with one row, this contains all required columns and onw row with zeros.
     :return: Dictionary with cleaned house information. Also a possible error message
     """
+    #print(model_row)
     model_row = _set_swimming_pool(house_information, model_row)
     model_row = _set_living_area(house_information, model_row)
     model_row = _set_land_area(house_information, model_row)
@@ -186,7 +197,7 @@ def preprocess(house_information: dict, model_row :pd.DataFrame) -> np.ndarray:
     model_row = _set_energy_class(house_information, model_row)
     model_row = _set_property_subtype(house_information, model_row)
     model_row = _set_post_code(house_information, model_row)
-
+    #print(model_row)
     return model_row
 
 

@@ -23,6 +23,7 @@ app = Flask(__name__)
 """JSON_FILE is a dictionary that contains the options for each fields,
 for example {'energy classes' : 'A++', 'A+' etc.}  """
 _JSON_FILE = None
+_HOUSE_PROP = None
 
 
 def _check_options(content_json: dict, field_opt: str) -> str:
@@ -35,8 +36,8 @@ def _check_options(content_json: dict, field_opt: str) -> str:
         return ""
     value = str(content)
     options = _JSON_FILE.get(field_opt)
-    print("VALUE: ", value)
-    print("field_opt: ", field_opt)
+    # print("VALUE: ", value)
+    # print("field_opt: ", field_opt)
     # print("OPTIONS: ", options)
     if value is not None and value not in options:
         if len(options) > 25:
@@ -49,31 +50,26 @@ def _check_options(content_json: dict, field_opt: str) -> str:
     return ""
 
 
-def _check_mandatory_fields(
-    content_json: dict, living_field: str, zip_field: str, subtype_field: str
-) -> str:
+def _check_mandatory_fields(content_json: dict) -> str:
     """Check if the mandatory fields are in the request
-    params:
-        living_area : str, value that has got from the request
-        zip_code : str, value that has got from the request
-        property_subtype : str, value that has got from the request
-    return: str, that contains error messages or None if there is no errors
+    :param content_json: the dictionary that has got from the request
+    return: str, that contains error messages or empty string if there is no errors
     """
-    living_area = content_json.get(living_field)
-    zip_code = content_json.get(zip_field)
-    print("zip_code: ", zip_code)
-    print("type of zip_code: ", type(zip_code))
-    property_subtype = content_json.get(subtype_field)
+    #list of mandatory_properties (for ex. 'area', 'zip-code' and 'property-subtype')
+    mandatory_properties = []
+    for prop in _HOUSE_PROP.keys():
+        if _HOUSE_PROP.get(prop).get("mandatory"):
+            mandatory_properties.append(prop)
+
     missing_fields = ""
-    if living_area is None:
-        missing_fields += "'living-area' "
-    if zip_code is None:
-        missing_fields += "'zip-code' "
-    if property_subtype is None:
-        missing_fields += "'property-subtype' "
+    for name in mandatory_properties:
+        value = content_json.get(name)
+        if value is None:
+            missing_fields += f"'{name}' "
+
     if len(missing_fields) > 0:
         return (
-            "'Living-area', 'zip-code' and 'property-subtype' "
+            "'area', 'zip-code' and 'property-subtype' "
             f"are mandatory fields. You are missing: {missing_fields}.{chr(10)}"
         )
 
@@ -130,6 +126,8 @@ def _check_bool(content_json: dict, field_name) -> str:
     return f"The value of the field '{field_name}' is not a boolean value (uncorrect value \
         is '{value}' and the type is {type(value)}). {chr(10)}"
 
+def _check_types(content_json: dict):
+    pass
 
 def _check_unwanted(content_json: dict) -> str:
     """
@@ -138,26 +136,17 @@ def _check_unwanted(content_json: dict) -> str:
     :param content_json: the dictionary that has got from the request
     :return: str, that contains the error message or None if there is no errors
     """
-    keys = content_json.keys()
-    print("type of keys: ", type(keys))
-    extra_keys = []
-    valid_keys = [
-        "property-subtype",
-        "living-area",
-        "kitchen-type",
-        "energy-class",
-        "zip-code",
-        "land-area",
-        "house-number",
-        "swimming-pool",
-        "street-address",
-    ]
-    for key in keys:
-        if key not in valid_keys:
-            extra_keys.append(key)
-    if len(extra_keys) > 0:
+    allowed_keys = _HOUSE_PROP.keys()
+    request_keys = content_json.keys()
+    unwanted_keys = []
+
+    for key in request_keys:
+        if key not in allowed_keys:
+            unwanted_keys.append(key)
+
+    if len(unwanted_keys) > 0:
         return "The request contains the following fields that are " +\
-            f"not valid: {extra_keys}. {chr(10)}"
+            f"not valid: {unwanted_keys}. {chr(10)}"
     return ""
 
 
@@ -168,19 +157,31 @@ def house_api() -> dict:
     :return: Dictionary the price estimate for the house or error message.
     """
     content_json = request.get_json()
-    print("content_json: ", content_json)
+
     _errors = ""
-    _errors = _check_mandatory_fields(
-        content_json, "living-area", "zip-code", "property-subtype"
-    )
+    _errors = _check_mandatory_fields(content_json)
+
+    #these are used in the prediction:
     _errors += _check_options(content_json, "property-subtype")
-    _errors += _check_int(content_json, "living-area")
+    _errors += _check_int(content_json, "area")
     _errors += _check_options(content_json, "kitchen-type")
     _errors += _check_options(content_json, "energy-class")
     _errors += _check_options(content_json, "zip-code")
     _errors += _check_int(content_json, "land-area")
     _errors += _check_int(content_json, "house-number")
     _errors += _check_bool(content_json, "swimming-pool")
+
+    #these are not used in the prediction, but values are checked anyway:
+    _errors += _check_int(content_json, "rooms-number")
+    _errors += _check_bool(content_json, "garden")
+    _errors += _check_int(content_json, "garden-area")
+    _errors += _check_bool(content_json, "furnished")
+    _errors += _check_bool(content_json, "open-fire")
+    _errors += _check_bool(content_json, "terrace")
+    _errors += _check_int(content_json, "terrace-area")
+    _errors += _check_int(content_json, "facades-number")
+    _errors += _check_options(content_json, "building-state")
+
     _errors += _check_unwanted(content_json)
 
     if len(_errors) > 0:
@@ -217,4 +218,6 @@ def return_data() -> dict:
 if __name__ == "__main__":
     with open("./model/options.json", "r", encoding="utf-8") as json_file:
         _JSON_FILE = json.load(json_file)
+    with open("./model/properties_meta.json", "r", encoding="utf-8") as json_file:
+        _HOUSE_PROP = json.load(json_file)
     app.run(host="0.0.0.0", port=5001, debug=True)
