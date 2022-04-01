@@ -19,9 +19,8 @@ from predict import prediction
 
 app = Flask(__name__)
 
-"""JSON_FILE is a dictionary that contains the options for each fields,
-for example {'energy classes' : 'A++', 'A+' etc.}  """
-_JSON_FILE = None
+"""A dictionary that contains the meta data for  each fields,
+ """
 _HOUSE_META = None
 
 
@@ -34,7 +33,7 @@ def _check_options(content_json: dict, field_opt: str) -> str:
     if content is None:
         return ""
     value = str(content)
-    options = _JSON_FILE.get(field_opt)
+    options = _HOUSE_META.get(field_opt).get("options")
     # print("VALUE: ", value)
     # print("field_opt: ", field_opt)
     # print("OPTIONS: ", options)
@@ -100,9 +99,6 @@ def _check_int(content_json: dict, field_name) -> str:
     :return: str, that contains the error message or None if there is no errors
     """
     value = content_json.get(field_name)
-    # print("VALUE: ", value)
-    # print("value type: ", type(value))
-    # print("field_name: ", field_name)
     if value is None or isinstance(value, int):
         return ""
     return (
@@ -132,13 +128,17 @@ def _check_types(content_json: dict) -> str:
     :return: str, that contains the error message(s) if there is no errors. If
     there is no errors, it returns an empty string.
     """
+    print("CHECKING TYPES")
     content_json_keys = content_json.keys()
     _errors = ""
     for property_name in content_json_keys:
         type_of_data = _HOUSE_META.get(property_name).get("type")
+
+
         if type_of_data == "int":
             _errors += _check_int(content_json, property_name)
         elif type_of_data == "bool":
+            
             _errors += _check_bool(content_json, property_name)
         elif type_of_data == "options":
             _errors += _check_options(content_json, property_name)
@@ -149,7 +149,6 @@ def _check_types(content_json: dict) -> str:
                 field '{property_name}' is not valid (uncorrect \
                     value is '{type_of_data}'. {chr(10)}"
     return _errors
-            
 
 
 def _check_unwanted(content_json: dict) -> str:
@@ -180,18 +179,19 @@ def house_api() -> dict:
     :return: Dictionary the price estimate for the house or error message.
     """
     content_json = request.get_json()
-
     _errors = ""
-    _errors = _check_mandatory_fields(content_json)
-    _errors += _check_types(content_json)
     _errors += _check_unwanted(content_json)
+    if not _errors:
+        _errors = _check_mandatory_fields(content_json)
+        _errors += _check_types(content_json)
+
 
     if len(_errors) > 0:
         # abort(400, _errors)
         return {"error": _errors}
 
     model_row, my_theta = _load_model()
-    cleaned_data = cleaning_data.preprocess(content_json, model_row)
+    cleaned_data = cleaning_data.preprocess(content_json, model_row, _HOUSE_META)
     estimate = prediction.predict(cleaned_data, my_theta)
     return {"prediction": estimate}
 
@@ -218,8 +218,6 @@ def return_data() -> dict:
 
 
 if __name__ == "__main__":
-    with open("./model/options.json", "r", encoding="utf-8") as json_file:
-        _JSON_FILE = json.load(json_file)
     with open("./model/properties_meta.json", "r", encoding="utf-8") as json_file:
         _HOUSE_META = json.load(json_file)
     port = os.environ.get("PORT", 5001)

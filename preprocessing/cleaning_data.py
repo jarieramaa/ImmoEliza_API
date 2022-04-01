@@ -1,17 +1,13 @@
 """
-The idea in this module is simple:
+This module:
 
-    1. Loading (from file) one row of data that is used to predict the
+    1. Loads (from file) one row of data that is used to predict the
        price of the house. However, all the values are zeros. This is done
        because then we can be sure that our dataframe is exactly the same.
 
-    2. Getting dictionary from API (or in testing phase loading it from file)
+    2. Getting dictionary from API
 
-    3. Converting all columns one by one according the dictionary.
-
-    4. Normalizing values. This is done by loading the scaler that was used
-       when training the model (instance was saved to a file and now it is loaded).
-
+    3. Converting all columns one by one according the properties_meta.json -file (house_meta).
 """
 
 
@@ -19,7 +15,9 @@ import pickle
 import numpy as np
 import pandas as pd
 
-
+"""
+A dictionary that contains the meta data for  each fields,
+"""
 
 def _load_house() -> dict:
     """
@@ -77,7 +75,7 @@ def _set_land_area(house_information, model_row) -> pd.DataFrame:
     if original_value is None:
         return model_row
     floor, ceiling = 0, 1
-    _min, _max = 15, 800
+    _min, _max = 0, 15000
     model_row["Surface of the plot"] = (original_value - _min) / (_max - _min) * (
         ceiling - floor
     ) + floor
@@ -177,7 +175,7 @@ def _set_post_code(house_information, model_row) -> pd.DataFrame:
     return model_row
 
 
-def preprocess(house_information: dict, model_row :pd.DataFrame) -> np.ndarray:
+def preprocess(content_json: dict, model_row :pd.DataFrame, house_meta) -> np.ndarray:
     """
     Converting the house information ready for use with prediction model.
     1. Converting non-numeric values to numeric values,
@@ -189,15 +187,31 @@ def preprocess(house_information: dict, model_row :pd.DataFrame) -> np.ndarray:
     :model_row: Dataframe with one row, this contains all required columns and onw row with zeros.
     :return: Dictionary with cleaned house information. Also a possible error message
     """
-    #print(model_row)
-    model_row = _set_swimming_pool(house_information, model_row)
+    content_json_keys = content_json.keys()
+    _errors = ""
+    for property_name in content_json_keys:
+        data_cleaning = house_meta.get(property_name).get("data_cleaning")
+        if data_cleaning is None:
+            continue
+        print("-"*100)
+        print(type(data_cleaning))
+        print("property_name, data_cleaning", property_name, data_cleaning)
+        #if data_cleaning.get("method") == "one-hot":
+        #    print("ONE-HOT-ENCODING")
+
+            #pass
+
+        print("property_name, data_cleaning", property_name, data_cleaning)
+
+
+    """model_row = _set_swimming_pool(house_information, model_row)
     model_row = _set_living_area(house_information, model_row)
     model_row = _set_land_area(house_information, model_row)
     model_row = _set_kitchen_type(house_information, model_row)
     model_row = _set_energy_class(house_information, model_row)
     model_row = _set_property_subtype(house_information, model_row)
-    model_row = _set_post_code(house_information, model_row)
-    #print(model_row)
+    model_row = _set_post_code(house_information, model_row)"""
+
     return model_row
 
 

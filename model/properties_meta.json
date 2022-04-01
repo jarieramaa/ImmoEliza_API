@@ -2,7 +2,7 @@
     "mandatory": true,
     "type": "options",
     "df_name": "property sub-type",
-    "one-hot-encoding": true,
+    "data_cleaning": {"method": "one-hot"},
     "options": [
         "APARTMENT_BLOCK",
         "BUNGALOW",
@@ -31,12 +31,26 @@
         "mandatory": true,
         "type": "int",
         "df_name": "Living area",
-        "normalisation": true
-    },
+        "data_cleaning": {"method" : "normalise",
+                          "min": 15,
+                          "max": 800}
+                        },
     "kitchen-type": {
         "mandatory": false,
         "type": "options",
         "df_name": "Kitchen type",
+        "data_cleaning": {"method":"convert",
+                          "empty_value": 1.7628865979381443,
+                          "conversion_table" : {
+                            "Hyper equipped": 3,
+                            "USA hyper equipped": 3,
+                            "Semi equipped": 2,
+                            "USA semi equipped": 2,
+                            "Installed": 1,
+                            "USA installed": 1,
+                            "Not installed": 0,
+                            "USA uninstalled": 0}
+                        },
         "options": [
             "Hyper equipped",
             "Installed",
@@ -45,26 +59,38 @@
             "USA hyper equipped",
             "USA installed",
             "USA semi equipped",
-            "USA uninstalled"
-          ],
-        "conversion_table" : {
-            "Hyper equipped": 3,
-            "USA hyper equipped": 3,
-            "Semi equipped": 2,
-            "USA semi equipped": 2,
-            "Installed": 1,
-            "USA installed": 1,
-            "Not installed": 0,
-            "USA uninstalled": 0
-        }
-    },
+            "USA uninstalled"]
+        },
     "energy-class": {
         "mandatory": false,
         "type": "options",
         "df_name": "Energy class",
+        "data_cleaning": {"method":"convert",
+            "empty_value": 4.9636785162287484,
+            "conversion_table" :{
+                "G_F": 0,
+                "G_D": 0.5,
+                "G_C": 1,
+                "G": 1.5,
+                "F_D": 2,
+                "F_B": 2.5,
+                "F": 3,
+                "E_B": 3.5,
+                "E": 4,
+                "D_C": 4.5,
+                "D": 5,
+                "C_B": 5.5,
+                "C": 6,
+                "B": 6.5,
+                "A": 7,
+                "A+": 7.5,
+                "A++": 8,
+                "Not specified": 0}
+            },
         "options": [
             "A",
             "A+",
+            "A++",
             "B",
             "C",
             "C_B",
@@ -72,102 +98,77 @@
             "E",
             "F",
             "F_B",
+            "F_D",
             "G",
             "G_C",
-            "G_D"
-          ],
-        "conversion_table" :{
-            "G_F": 0,
-            "G_D": 0.5,
-            "G_C": 1,
-            "G": 1.5,
-            "F_D": 2,
-            "F_B": 2.5,
-            "F": 3,
-            "E_B": 3.5,
-            "E": 4,
-            "D_C": 4.5,
-            "D": 5,
-            "C_B": 5.5,
-            "C": 6,
-            "B": 6.5,
-            "A": 7,
-            "A+": 7.5,
-            "A++": 8,
-            "Not specified": 0}
+            "G_D",
+            "G_F"
+          ]
     },
     "land-area": {
         "mandatory": false,
         "type": "int",
         "df_name": "Surface of the plot",
-        "normalisation": true
+        "data_cleaning": {"method": "normalise"}
     },
     "house-number": {
         "mandatory": false,
         "type": "int",
         "df_name": "<NOT VALID>"
-
     },
     "swimming-pool": {
         "mandatory": false,
         "type": "bool",
-        "df_name": "Swimming pool"
+        "df_name": "Swimming pool",
+        "data_cleaning": {"method": "bool"}     
     },
     "street": {
         "mandatory": false,
         "type": "str",
         "df_name": "<NOT VALID>"
     },
-    "rooms-number":
-    {
+    "rooms-number":{
         "mandatory": false,
         "type": "int",
         "df_name": "Bedrooms"
     },
-    "garden":
-    {
+    "garden":{
         "mandatory": false,
         "type": "bool",
-        "df_name": "Garden"
+        "df_name": "Garden",
+        "data_cleaning": {"method": "bool"}
     },
-    "garden-area":
-    {
+    "garden-area":{
         "mandatory": false,
         "type": "int",
         "df_name": "Garden surface"
     },
-    "furnished":
-    {
+    "furnished":{
         "mandatory": false,
         "type": "bool",
         "df_name": "Furnished"
     },
-    "open-fire":
-    {
+    "open-fire":{
         "mandatory": false,
         "type": "bool",
         "df_name": "How many fireplaces?"
     },
-    "terrace":
-    {
+    "terrace":{
         "mandatory": false,
         "type": "bool",
         "df_name": "Terrace"
     },
-    "terrace-area":
-    {
+    "terrace-area":{
         "mandatory": false,
         "type": "int",
         "df_name": "Terrace surface"
     },
-    "facades-number":
-    {
+    "facades-number":{
         "mandatory": false,
         "type": "int",
         "df_name": "Number of floors"
     },
-    "building-state":
-    {
+    "building-state":{
         "mandatory": false,
         "type": "options",
         "df_name": "Building condition",
@@ -183,7 +184,7 @@
         "mandatory": true,
         "type": "options",
         "df_name": "Post code",
-        "one-hot-encoding": true,
+        "data_cleaning": {"method": "one-hot"},
         "options":[
             "1000",
             "1005",
