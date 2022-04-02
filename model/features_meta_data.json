@@ -1,56 +1,57 @@
-{"property-subtype":{
-    "mandatory": true,
-    "type": "options",
-    "df_name": "property sub-type",
-    "data_cleaning": {"method": "one-hot"},
-    "options": [
-        "APARTMENT_BLOCK",
-        "BUNGALOW",
-        "CASTLE",
-        "CHALET",
-        "COUNTRY_COTTAGE",
-        "DUPLEX",
-        "EXCEPTIONAL_PROPERTY",
-        "FARMHOUSE",
-        "FLAT_STUDIO",
-        "GROUND_FLOOR",
-        "KOT",
-        "LOFT",
-        "MANOR_HOUSE",
-        "MANSION",
-        "MIXED_USE_BUILDING",
-        "OTHER_PROPERTY",
-        "PENTHOUSE",
-        "SERVICE_FLAT",
-        "TOWN_HOUSE",
-        "TRIPLEX",
-        "VILLA"
-      ]
-    }, 
-    "area" : {
+{
+    "property-subtype": {
+        "mandatory": true,
+        "type": "options",
+        "df_name": "property sub-type",
+        "data_cleaning": {"method": "one-hot"},
+        "options": [
+            "APARTMENT_BLOCK",
+            "BUNGALOW",
+            "CASTLE",
+            "CHALET",
+            "COUNTRY_COTTAGE",
+            "DUPLEX",
+            "EXCEPTIONAL_PROPERTY",
+            "FARMHOUSE",
+            "FLAT_STUDIO",
+            "GROUND_FLOOR",
+            "KOT",
+            "LOFT",
+            "MANOR_HOUSE",
+            "MANSION",
+            "MIXED_USE_BUILDING",
+            "OTHER_PROPERTY",
+            "PENTHOUSE",
+            "SERVICE_FLAT",
+            "TOWN_HOUSE",
+            "TRIPLEX",
+            "VILLA"
+        ]
+    },
+    "area": {
         "mandatory": true,
         "type": "int",
         "df_name": "Living area",
-        "data_cleaning": {"method" : "normalise",
-                          "min": 15,
-                          "max": 800}
-                        },
+        "data_cleaning": {"method": "normalise", "min": 15, "max": 800}
+    },
     "kitchen-type": {
         "mandatory": false,
         "type": "options",
         "df_name": "Kitchen type",
-        "data_cleaning": {"method":"convert",
-                          "empty_value": 1.7628865979381443,
-                          "conversion_table" : {
-                            "Hyper equipped": 3,
-                            "USA hyper equipped": 3,
-                            "Semi equipped": 2,
-                            "USA semi equipped": 2,
-                            "Installed": 1,
-                            "USA installed": 1,
-                            "Not installed": 0,
-                            "USA uninstalled": 0}
-                        },
+        "data_cleaning": {
+            "method": "convert",
+            "mean_value": 1.7628865979381443,
+            "conversion_table": {
+                "Hyper equipped": 3,
+                "USA hyper equipped": 3,
+                "Semi equipped": 2,
+                "USA semi equipped": 2,
+                "Installed": 1,
+                "USA installed": 1,
+                "Not installed": 0,
+                "USA uninstalled": 0
+            }
+        },
         "options": [
             "Hyper equipped",
             "Installed",
@@ -59,15 +60,17 @@
             "USA hyper equipped",
             "USA installed",
             "USA semi equipped",
-            "USA uninstalled"]
-        },
+            "USA uninstalled"
+        ]
+    },
     "energy-class": {
         "mandatory": false,
         "type": "options",
         "df_name": "Energy class",
-        "data_cleaning": {"method":"convert",
-            "empty_value": 4.9636785162287484,
-            "conversion_table" :{
+        "data_cleaning": {
+            "method": "convert",
+            "mean_value": 4.9636785162287484,
+            "conversion_table": {
                 "G_F": 0,
                 "G_D": 0.5,
                 "G_C": 1,
@@ -85,8 +88,9 @@
                 "A": 7,
                 "A+": 7.5,
                 "A++": 8,
-                "Not specified": 0}
-            },
+                "Not specified": 0
+            }
+        },
         "options": [
             "A",
             "A+",
@@ -103,89 +107,50 @@
             "G_C",
             "G_D",
             "G_F"
-          ]
+        ]
     },
     "land-area": {
         "mandatory": false,
         "type": "int",
         "df_name": "Surface of the plot",
-        "data_cleaning": {"method": "normalise"}
+        "data_cleaning": {"method": "normalise", "min": 0, "max": 15000}
     },
-    "house-number": {
-        "mandatory": false,
-        "type": "int",
-        "df_name": "<NOT VALID>"
-    },
+    "house-number": {"mandatory": false, "type": "int", "df_name": "<NOT VALID>"},
     "swimming-pool": {
         "mandatory": false,
         "type": "bool",
         "df_name": "Swimming pool",
-        "data_cleaning": {"method": "bool"}     
-    },
-    "street": {
-        "mandatory": false,
-        "type": "str",
-        "df_name": "<NOT VALID>"
-    },
-    "rooms-number":{
-        "mandatory": false,
-        "type": "int",
-        "df_name": "Bedrooms"
-    },
-    "garden":{
-        "mandatory": false,
-        "type": "bool",
-        "df_name": "Garden",
         "data_cleaning": {"method": "bool"}
     },
-    "garden-area":{
-        "mandatory": false,
-        "type": "int",
-        "df_name": "Garden surface"
-    },
-    "furnished":{
-        "mandatory": false,
-        "type": "bool",
-        "df_name": "Furnished"
-    },
-    "open-fire":{
+    "street": {"mandatory": false, "type": "str", "df_name": "<NOT VALID>"},
+    "rooms-number": {"mandatory": false, "type": "int", "df_name": "Bedrooms"},
+    "garden": {"mandatory": false, "type": "bool", "df_name": "Garden"},
+    "garden-area": {"mandatory": false, "type": "int", "df_name": "Garden surface"},
+    "furnished": {"mandatory": false, "type": "bool", "df_name": "Furnished"},
+    "open-fire": {
         "mandatory": false,
         "type": "bool",
         "df_name": "How many fireplaces?"
     },
-    "terrace":{
-        "mandatory": false,
-        "type": "bool",
-        "df_name": "Terrace"
-    },
-    "terrace-area":{
-        "mandatory": false,
-        "type": "int",
-        "df_name": "Terrace surface"
-    },
-    "facades-number":{
+    "terrace": {"mandatory": false, "type": "bool", "df_name": "Terrace"},
+    "terrace-area": {"mandatory": false, "type": "int", "df_name": "Terrace surface"},
+    "facades-number": {
         "mandatory": false,
         "type": "int",
         "df_name": "Number of floors"
     },
-    "building-state":{
+    "building-state": {
         "mandatory": false,
         "type": "options",
         "df_name": "Building condition",
-        "options":[
-            "NEW",
-            "GOOD",
-            "TO RENOVATE",
-            "JUST RENOVATED",
-            "TO REBUILD"
-          ]
+        "options": ["NEW", "GOOD", "TO RENOVATE", "JUST RENOVATED", "TO REBUILD"]
     },
     "zip-code": {
         "mandatory": true,
         "type": "options",
         "df_name": "Post code",
         "data_cleaning": {"method": "one-hot"},
-        "options":[
+        "options": [
             "1000",
             "1005",
             "1006",
@@ -2950,7 +2915,6 @@
             "9990",
             "9991",
             "9992"
-          ]
+        ]
     }
-
 }
