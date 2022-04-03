@@ -11,171 +11,97 @@ This module:
 """
 
 
-import pickle
 import numpy as np
 import pandas as pd
 
-"""
-A dictionary that contains the meta data for  each fields,
-"""
 
-def _load_house() -> dict:
+def _print_df(dataf: pd.DataFrame):
     """
-    Just for testing. Loading a dictionary that was created by API
-    :return: Dictionary with house information.
+    Made for testing. Printing the dataframe's columns that has
+    some values (there is over 200 columns in the model_row)
+    :dataf: dataframe to print
     """
-    with open("./house_information.pickle", "rb") as house_information_file:
-        house_information = pickle.load(house_information_file)
-    return house_information
+    columns = dataf.columns.values.tolist()
+    selected_columns = []
+    for column in columns:
+        if dataf[column].sum() > 0:
+            selected_columns.append(column)
+    print(dataf[selected_columns])
 
 
-def _set_swimming_pool(house_information, model_row) -> pd.DataFrame:
+def _one_hot_encoding(
+    content_json: dict, feature_name: str, model_row: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    set one-hot encoding for the model row
+    :content_json: json with the content read from the API
+    :feature_name: name of the feature
+    :model_row: dataframe with one row. This will be modified
+    :return: dataframe (model_row) with added one-hot encoding
+    """
+    columns_list = model_row.columns.values.tolist()
+    # column_name = f_meta.get(feature_name).get("df_name")
+    column_name = str(content_json.get(feature_name))
+    if column_name in columns_list:
+        model_row[column_name] = 1
+    return model_row
+
+
+def _set_boolean(
+    content_json: dict, feature_name: str, model_row: pd.DataFrame, f_meta: dict
+) -> pd.DataFrame:
     """
     set column swimming pool to one if there is a swimming pool in the house
     :house_information: dictionary with house information
     :model_row: dataframe with one row
     :return: dataframe where the value was added
     """
-    if house_information.get("swimming-pool"):
-        model_row["Swimming pool"] = 1
-        return model_row
+    value = content_json.get(feature_name)
+    if value:
+        column_name = f_meta.get(feature_name).get("df_name")
+        model_row[column_name] = 1
     return model_row
 
 
-def _set_living_area(house_information, model_row) -> pd.DataFrame:
-    """
-    set 'living area' for the model row. Also some prescaling
-    for the value is done as well. The original model didn't work
-    otherwise.
-    :house_information: dictionary with house information
-    :model_row: dataframe with one row
-    :return: dataframe where the value was added
-    """
-    original_value = house_information.get("area")
-    if original_value is None:
-        return model_row
-    floor, ceiling = 0, 1
-    _min, _max = 15, 800
-    model_row["Living area"] = (original_value - _min) / (_max - _min) * (
-        ceiling - floor
-    ) + floor
-    return model_row
-
-
-def _set_land_area(house_information, model_row) -> pd.DataFrame:
-    """
-    set 'land area' for the model row. Also some prescaling
-    for the value is done as well. The original model didn't work
-    otherwise.
-    :house_information: dictionary with house information
-    :model_row: dataframe with one row
-    :return: dataframe where the value was added
-    """
-    original_value = house_information.get("land-area")
-    if original_value is None:
-        return model_row
-    floor, ceiling = 0, 1
-    _min, _max = 0, 15000
-    model_row["Surface of the plot"] = (original_value - _min) / (_max - _min) * (
-        ceiling - floor
-    ) + floor
-    return model_row
-
-
-def _set_kitchen_type(house_information, model_row) -> pd.DataFrame:
-    """
-    convert string to numeric value
-    :house_information: dictionary with house information
-    :model_row: dataframe with one row
-    :return: dataframe where the value was added
-    """
-    value = house_information.get("kitchen-type")
-    converted_value = 0
-    if value in ("Hyper equipped", "USA hyper equipped"):
-        converted_value = 3
-    elif value in ("Semi equipped", "USA semi equipped"):
-        converted_value = 2
-    elif value in ("Installed", "USA installed"):
-        converted_value = 1
-    elif value in ("Not installed", "USA uninstalled"):
-        converted_value = 0
-    model_row["Kitchen type"] = converted_value
-    kitchen_options = {
-        "Hyper equipped": 3,
-        "USA hyper equipped": 3,
-        "Semi equipped": 2,
-        "USA semi equipped": 2,
-        "Installed": 1,
-        "USA installed": 1,
-        "Not installed": 0,
-        "USA uninstalled": 0, 
-    }
-    return model_row
-
-
-def _set_energy_class(house_information, model_row) -> pd.DataFrame:
+def _convert_values(content_json, feature_name, model_row, f_meta) -> pd.DataFrame:
     """converting energy class to numeric value
     :house_information: dictionary with house information
     :model_row: dataframe with one row
     :return: dataframe where the value was added
     """
-    value = house_information.get("energy-class")
-    converted_value = 0
-    energy_options = {
-        "G_F": 0,
-        "G_D": 0.5,
-        "G_C": 1,
-        "G": 1.5,
-        "F_D": 2,
-        "F_B": 2.5,
-        "F": 3,
-        "E_B": 3.5,
-        "E": 4,
-        "D_C": 4.5,
-        "D": 5,
-        "C_B": 5.5,
-        "C": 6,
-        "B": 6.5,
-        "A": 7,
-        "A+": 7.5,
-        "A++": 8,
-        "Not specified": 0,
-    }
-    if value in energy_options.keys():
-        converted_value = energy_options.get(value)
-    model_row["Energy class"] = converted_value
+    value = content_json.get(feature_name)
+    data_cleaning = f_meta.get(feature_name).get("data_cleaning")
+    if data_cleaning is not None:
+        mean_value = data_cleaning.get("mean_value")
+        conversion_table = data_cleaning.get("conversion_table")
+        df_name = f_meta.get(feature_name).get("df_name")
+        # if value = None, then use mean_value, otherwise use conversion_table
+        new_value = mean_value
+        conv_value = conversion_table.get(value)
+        if conv_value is not None:
+            new_value = conv_value
+        model_row[df_name] = new_value
     return model_row
 
 
-def _set_property_subtype(house_information, model_row) -> pd.DataFrame:
-    """
-    set property subtype for the model row
-    :house_information: dictionary with house information
-    :model_row: dataframe with one row
-    :return: dataframe with added property subtype
-    """
-    columns_list = model_row.columns.values.tolist()
-    value = house_information.get("property-subtype")
-    if value in columns_list:
-        model_row[value] = 1
+def _normalise_values(
+    content_json: dict, feature_name: str, model_row: pd.DataFrame, f_meta: dict
+) -> pd.DataFrame:
+    """ """
+    value = content_json.get(feature_name)
+    df_name = f_meta.get(feature_name).get("df_name")
+    data_cleaning = f_meta.get(feature_name).get("data_cleaning")
+    if data_cleaning is not None and df_name is not None and value is not None:
+        min_value = data_cleaning.get("min")
+        max_value = data_cleaning.get("max")
+        floor, ceiling = 0, 1
+        model_row[df_name] = (value - min_value) / (max_value - min_value) * (
+            ceiling - floor
+        ) + floor
     return model_row
 
 
-def _set_post_code(house_information, model_row) -> pd.DataFrame:
-    """
-    set 'post code' for the model row
-    :house_information: dictionary with house information
-    :model_row: dataframe with one row
-    :return: dataframe with added 'post code'
-    """
-    columns_list = model_row.columns.values.tolist()
-    value = str(house_information.get("zip-code"))
-    if value in columns_list:
-        model_row[value] = 1
-    return model_row
-
-
-def preprocess(content_json: dict, model_row :pd.DataFrame, house_meta) -> np.ndarray:
+def preprocess(content_json: dict, model_row: pd.DataFrame, f_meta) -> np.ndarray:
     """
     Converting the house information ready for use with prediction model.
     1. Converting non-numeric values to numeric values,
@@ -187,31 +113,20 @@ def preprocess(content_json: dict, model_row :pd.DataFrame, house_meta) -> np.nd
     :model_row: Dataframe with one row, this contains all required columns and onw row with zeros.
     :return: Dictionary with cleaned house information. Also a possible error message
     """
-    content_json_keys = content_json.keys()
-    _errors = ""
-    for property_name in content_json_keys:
-        data_cleaning = house_meta.get(property_name).get("data_cleaning")
+
+    # content_json_keys = content_json.keys()
+    f_meta_keys = f_meta.keys()
+    for feature_name in f_meta_keys:
+        data_cleaning = f_meta.get(feature_name).get("data_cleaning")
         if data_cleaning is None:
             continue
-        print("-"*100)
-        print(type(data_cleaning))
-        print("property_name, data_cleaning", property_name, data_cleaning)
-        #if data_cleaning.get("method") == "one-hot":
-        #    print("ONE-HOT-ENCODING")
-
-            #pass
-
-        print("property_name, data_cleaning", property_name, data_cleaning)
-
-
-    """model_row = _set_swimming_pool(house_information, model_row)
-    model_row = _set_living_area(house_information, model_row)
-    model_row = _set_land_area(house_information, model_row)
-    model_row = _set_kitchen_type(house_information, model_row)
-    model_row = _set_energy_class(house_information, model_row)
-    model_row = _set_property_subtype(house_information, model_row)
-    model_row = _set_post_code(house_information, model_row)"""
-
+        cleaning_method = data_cleaning.get("method")
+        if cleaning_method == "one-hot" and feature_name in content_json:
+            _one_hot_encoding(content_json, feature_name, model_row)
+        elif cleaning_method == "normalise" and feature_name in content_json:
+            _normalise_values(content_json, feature_name, model_row, f_meta)
+        elif cleaning_method == "bool" and feature_name in content_json:
+            _set_boolean(content_json, feature_name, model_row, f_meta)
+        elif cleaning_method == "convert":  # mean for empty values
+            _convert_values(content_json, feature_name, model_row, f_meta)
     return model_row
-
-

@@ -1,6 +1,9 @@
+"""
+Generating the info about needed dictionary. This is used for when calling GET /prediction
+"""
 
-from distutils.command.build_scripts import first_line_re
 import json
+
 
 def generate_info(f_meta: json) -> str:
     """
@@ -8,16 +11,16 @@ def generate_info(f_meta: json) -> str:
     When generating this info from the actual meta data, it's always up to date.
     :f_meta: dictionary with feature meta data
     :return: string with information about the features"""
-    keys= f_meta.keys()
+    keys = f_meta.keys()
     result = "{"
     first_line = True
     for name in keys:
         mandatory = f_meta[name]["mandatory"]
         if first_line:
-            result += f"\"{name}\" : "
+            result += f'"{name}" : '
             first_line = False
         else:
-            result += f",\n\"{name}\" : "
+            result += f',\n"{name}" : '
         if not mandatory:
             result += "Optional"
         if f_meta.get(name).get("options") is not None:
@@ -26,7 +29,7 @@ def generate_info(f_meta: json) -> str:
                 counter = 0
                 result += "["
                 for i, option in enumerate(options):
-                    result += f"\"{option}\""
+                    result += f'"{option}"'
                     print(i, len(options))
                     if i < len(options) - 1:
                         result += " | "
@@ -36,12 +39,12 @@ def generate_info(f_meta: json) -> str:
                         counter = 0
                 result += "]"
             else:
-                result += "int" #zip-code
+                result += "int"  # zip-code
         else:
-            if mandatory :
+            if mandatory:
                 result += f_meta[name]["type"]
             else:
-                result += "("+f_meta[name]["type"]+")"
+                result += "(" + f_meta[name]["type"] + ")"
     result += " \n}"
     print(result)
     return result
