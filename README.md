@@ -12,6 +12,7 @@ Table of content
   - [model_row.pickle](#model_rowpickle)
   - [theta.pickle](#thetapickle)
 - [Application Program Interface (API)](#application-program-interface-api)
+  - [Connecting to Heroku service](#connecting-to-heroku-service)
   - [Alive (Method: 'GET', Address: '/' )](#alive-method-get-address--)
   - [Prediction](#prediction)
     - [Getting the information what to post (Method: 'GET', Address: '/predict' )](#getting-the-information-what-to-post-method-get-address-predict-)
@@ -66,8 +67,8 @@ Currently there are three different prediction models:
 
 The 'heart' of the 'Several prediction models' -feature is the feature_meta_data.json. Here is an example how the data is defined in this file. This example is from "kitchen-type". 
 
-'''json
-"kitchen-type": {
+```json
+{"kitchen-type": {
         "mandatory": false,
         "type": "options",
         "df_name": "Kitchen type",
@@ -96,8 +97,9 @@ The 'heart' of the 'Several prediction models' -feature is the feature_meta_data
             "USA uninstalled"
         ]
     },
-'''
-Example feature from feature_meta_data.json file
+ }
+```
+*Example feature from feature_meta_data.json file*
 
 #  Creating and Updating prediction model
 
@@ -105,7 +107,7 @@ There is no need to change the code if the prediction model is changed. The appl
 
 ## features\_meta\_data.json
 
-This file is the hearth of this application. It defines how API works, what values are accepted or required, when error messages are send and how the data cleaning will be made. This file contains meta data of the features, data types, possible values, cleaning information etc. 
+This file is the hearth of this application. It defines how API works, what values are accepted or required, when error messages are send and how the data cleaning will be made. This file contains meta data of the features, data types, possible values, cleaning information etc. Here is a short example sample of this file:
 
 ![example: features_meta_data.json](./utils/features_meta_data_subtype.png)
 <br>*"property-subtype" uses options. Only these values are accepted*.
@@ -144,6 +146,12 @@ Theta is used to calculate the prediction for the price. Theta is saved as a bin
 
 # Application Program Interface (API)
 
+## Connecting to Heroku service
+
+This application is located in the address: https://jari-prediction.herokuapp.com/.
+
+By sending for example GET request to that address https://jari-prediction.herokuapp.com/ should respond you a dictionary as seen in next chapter 'alive'. From there you know that your connection is working. 
+
 This section briefly describes the API interface and what data the interface expects.
 
 | Usage      | Type | Address       |
@@ -154,18 +162,18 @@ This section briefly describes the API interface and what data the interface exp
 | Setup      | GET  | <url>/setup   |
 | Setup      | POST | <url>/setup   |
 
-<url> = url address, for example http://127.0.0.1:5001
+<url> = url address, for example http://127.0.0.1:5000 (locally) or when using Heroku: https://jari-prediction.herokuapp.com
 
 Please, see following chapters for more detailed information
 
 ## Alive (Method: 'GET', Address: '/' )
 The purpose of 'Alive' is only to verify that the service is up and running. Here is an example of the return value:
 
-'''json
+```json
 {
     "status": "alive"
 }
-'''
+```
 
 ## Prediction 
 The application needs information from the user to calculate the price prediction. This request allows the user to provide information about the property, in which case the user is given price information.
