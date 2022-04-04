@@ -2,7 +2,7 @@
 
 This app predicts the price of a house. For that the app needs some information about the house. As a response the user receives the price prediction. Information is delivered through the API, it's described in this document.
 
-Table of content
+Table of content:
 
 - [ImmoEliza_API](#immoeliza_api)
 - [Required modules and versions](#required-modules-and-versions)
@@ -32,7 +32,7 @@ Table of content
 
 #  Required modules and versions
 
-The application runs in the Heroku environment, so the user does not need to install the development environment. However, if you want to do development work, the following libraries are needed.
+The application runs in the Heroku ([connect to Heroku](#connecting-to-heroku-service)) environment, so the user does not need to install the development environment. However, if you want to do development work, the following libraries are needed.
 
 | Module     | Version |
 | ---------- | ------- |
@@ -43,26 +43,25 @@ The application runs in the Heroku environment, so the user does not need to ins
 | pycurl     | 7.45.1  |
 | matplotlib | 3.5.1   |
 
-The application is started with the following command: python app.py. This will launch the API. You need another program, such as Postman (https://www.postman.com), to use the API
+The application is started with the following command: python app.py. This will launch the API. You need another program, such as Postman (https://www.postman.com), to use the API.
 
 # Several prediction models
-The application supports several different price prediction models. They can have different API, features, data types, cleaning precess and prediction calculation. It is possible to change prediction model without restarting the service (on the fly). Each prediction model have a different API and a different data cleaning process, theta, columns etc. These are defined in the json file  (feature_meta_data.json).
+The application supports several different price prediction models. They can have different API, features, data types, cleaning precess and prediction calculation. It is possible to change prediction model without restarting the service ("on the fly"). Each prediction model have a different API and a different data cleaning process. These are defined in the json file  (feature_meta_data.json).
 
 'Several prediction models' -feature is implemented by separating code from data. The python code knows nothing about the content of the data. All metadata is defined in a JSON file (feature_meta_data.json). The application reads this file and by that information:
 1. Creates an API
 2. Performs error checking (feature names, data types, values, etc.)
 3. Cleans the data: normalises values (if needed), converts non numeric values to numeric, handles null values etc.
-4. Calculates the price forecast
-5. Also the 'GET /prediction' -info is generated from this file. By that way it's always up to date when updating the model. 
+4. Generates GET '/prediction' -information (what data is needed in the request). By that way it's always up to date. 
 
 Under 'model' -folder is a subfolder for each prediction model. There are three files: 
-1. feature_meta_data.json - meta data for the dataset
+1. feature_meta_data.json - meta data as described above
 2. model_row.pickle - dataframe that defines the columns for the model
 3. theta.pickle - trained theta is used to calculate the prediction
 
 Currently there are three different prediction models:
 1. Normal - this is exactly the same what is described in the challenge. 
-2. Light - there are only seven best working features
+2. Light - there are only seven best features
 3. Optimal - this is a compromise between two previous ones. It contains the best features, but minimum differences to the challenge description.
 
 The 'heart' of the 'Several prediction models' -feature is the feature_meta_data.json. Here is an example how the data is defined in this file. This example is from "kitchen-type". 
@@ -121,19 +120,19 @@ This file is the hearth of this application. It defines how API works, what valu
 ![example: features_meta_data.json](./utils/features_meta_data_kitchen.png)
 <br>*Kitchen-type feature uses a conversion table. With that the values are calculated to prediction model.*
 
-**Example 2:**
 <br> - This example shows also conversion table and a mean value that are used in the data cleaning
 
-![example: features_meta_data.json](./utils/features_meta_data_swimming.png)
-<br>*Swimming-pool -feature is one of the simplest ones*
+**Example 2:**
 
-**Example 3:**
+![example: features_meta_data.json](./utils/features_meta_data_swimming.png)
+<br>*Swimming-pool -feature is boolean type feature*
+
 <br> - Data type is boolean. Therefore option list is not needed
 <br> - "df_name" defines the column name that is used in the data frame.
 
 ## model_row.pickle
 
-Application creates a data frame from the values that API received from the request. It's vital that in this dataframe all the columns are in the same order than in the original training model. Because of dummies, thare are well over 200 columns. The easiest way to be sure that all columns exists and are in the same order as in the original training data frame is to use a small sample data frame. That's why this file is created (model_row.pickle)It has all the columns, but only one row. All the values are zero. Zeros will be replaced by cleaning.py. 
+It's vital that prediction model has all the columns (in the same order than) than with the original training model. Because of dummies, there is often hundreds of columns. The easiest way to be sure that all columns exists and are in the same order as in the original training model, is to use a small sample data frame. That's why this file is created (model_row.pickle). It has all the columns, but only one row. All the row values are zero. Zeros will be replaced when data is being cleaned. 
 
 
 ![example: features_meta_data.json](./utils/model_row.png)
@@ -156,15 +155,15 @@ This section briefly describes the API interface and what data the interface exp
 
 | Usage      | Type | Address       |
 | ---------- | ---- | ------------- |
-| Alive      | GET  | <url>/        |
-| Prediction | GET  | <url>/predict |
-| Prediction | POST | <url>/predict |
-| Setup      | GET  | <url>/setup   |
-| Setup      | POST | <url>/setup   |
+| Alive      | GET  | ```<url>```/        |
+| Prediction | GET  | ```<url>```/predict |
+| Prediction | POST | ```<url>```/predict |
+| Setup      | GET  | ```<url>```/setup   |
+| Setup      | POST | ```<url>```/setup   |
 
-<url> = url address, for example http://127.0.0.1:5000 (locally) or when using Heroku: https://jari-prediction.herokuapp.com
+```<url>``` is url address, for example http://127.0.0.1:5000 (locally) or when using Heroku: https://jari-prediction.herokuapp.com
 
-Please, see following chapters for more detailed information
+Please, see following chapters for more detailed information.
 
 ## Alive (Method: 'GET', Address: '/' )
 The purpose of 'Alive' is only to verify that the service is up and running. Here is an example of the return value:
@@ -176,15 +175,15 @@ The purpose of 'Alive' is only to verify that the service is up and running. Her
 ```
 
 ## Prediction 
-The application needs information from the user to calculate the price prediction. This request allows the user to provide information about the property, in which case the user is given price information.
+The application needs information from the user to calculate the price prediction. This request allows the user to provide information about the property. This data is used when application calculates the price prediction.
 
-The user can check what kind of information the application expects with the GET method. Examples of using GET and POST can be found below.
+The user can check what kind of information the application expects with the GET method. With POST method the user can define the actual house information. Examples of using GET and POST can be found below.
 
 
 ### Getting the information what to post (Method: 'GET', Address: '/predict' )
-GET <url>/predict allows the user to see what kind of data the application needs to calculate the property price estimate.
+GET url/predict allows the user to see what kind of data the application needs to calculate the property price estimate.
 
-The user can send a GET request to the application (GET: <url>/predict). The user gets back a dictionary (pls. see example below) that describes the needed data, data types and format.
+The user can send a GET request to the application (GET: ```<url>```/predict). The user gets back a dictionary (pls. see example below) that describes the needed data, data types and format.
 
 The application supports several different prediction models that needs different information to make a price prediction. When using a different prediction model, the required input data is also different. With GET /predict you can easily check what kind of information is needed. For more information on the different prediction models, see the 'setup' chapter
 
@@ -221,15 +220,15 @@ This information is needed for 'Optimal' prediction model. Please, check the lat
 
 ### Getting the price prediction (Method: 'POST', Address: '/predict' )
 
-When using this application, you need to send a dictionary API to the interface. It has to follow the data dictionary that the app is giving with GET <url>/predict -request. 
+When using this application, you need to send a dictionary API to the interface. It has to follow the data dictionary that the app is giving with GET ```<url>```/predict -request. 
 
-'''json
+```json
     {
         "property-subtype": "APARTMENT_BLOCK",
         "area": 310,
         "zip-code": 1200
     }
-'''
+```
 <br> An example of a simple dictionary that provides property information to an application
 
 
@@ -237,12 +236,12 @@ When using this application, you need to send a dictionary API to the interface.
 ## SETUP
 With setup you can see what prediction model is active and if needed, you can change it. 
 
-There address is <url>/setup
+There address is ```<url>```/setup
 
 ### Getting the info about current model (Method: 'GET', Address: '/setup' )
-By sending GET request to <url>/setup the application gives following information:
+By sending GET request to ```<url>```/setup the application gives following information:
 
-'''json
+```json
 {
     "active": "Normal",
     "available_options": [
@@ -251,39 +250,30 @@ By sending GET request to <url>/setup the application gives following informatio
         "Optimal"
     ]
 }
-'''
-Example information from GET request to /setup.
+```
+*Example information from GET request to /setup*
 
-The response shows that model 'Normal' is currently active. It also shows that there are two other models: 'Light' and 'Optimal'. 
+The response shows that model 'Normal' is currently active. It also shows that there are two other models: 'Light' and 'Optimal' available. In the next chapter we see how they could be activated.
 
 ### Chancing the model  (Method: 'POST', Address: '/setup' )
-By sending POST request to <url>/setup it is possible to change the model. Above example the 'normal' is active. Let's say we want to activate 'Optimal'. This is done by posting following dictionary to /setup.
+By sending POST request to ```<url>```/setup it is possible to change the model. Above example the 'normal' is active. Let's say we want to activate 'Optimal'. This is done by posting following dictionary to /setup.
 
-'''json
-    {
+```json
+{
         "activate" : "Optimal"
-    }
-'''json
+}
+```
 
-Activating 'Optimal'.
+*Activating 'Optimal'*
 
 The application will send a confirmation if the model change was successful. If there is any mistakes (wrong key or value etc), an informative error message will be send to the user. Please, see the example below:
-'''json
-{
-    "error": "Please, make sure your json is correct. The format is{\"activate\" : <selection>}. <selection> should be one of the following: ['Light', 'Normal', 'Optimal']"
-}
-'''
 
-
-
-'''json
+```json
 {
     "status": "'Optimal' is now activated"
 }
-'''json
-The confirmation
-
-
+```
+*The confirmation*
 
 ## Errors
 
