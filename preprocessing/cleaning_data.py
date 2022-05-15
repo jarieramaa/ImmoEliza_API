@@ -113,7 +113,6 @@ def preprocess(content_json: dict, model_row: pd.DataFrame, f_meta) -> np.ndarra
     :model_row: Dataframe with one row, this contains all required columns and onw row with zeros.
     :return: Dictionary with cleaned house information. Also a possible error message
     """
-
     # content_json_keys = content_json.keys()
     f_meta_keys = f_meta.keys()
     for feature_name in f_meta_keys:
